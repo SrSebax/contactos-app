@@ -1,3 +1,6 @@
+import 'package:contactos_app/screen/edit_contact.dart';
+import 'package:contactos_app/screen/message_response.dart';
+import 'package:contactos_app/screen/register_contact.dart';
 import 'package:flutter/material.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -10,8 +13,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePage extends State<MyHomePage> {
   List<Contacto> contactos = [
-    Contacto(name: 'Sebas', lastname: 'Londoño', phone: '302 4247369'),
-    Contacto(name: 'Andres', lastname: 'Londoño', phone: '302 4247369'),
+    Contacto(name: 'Sebas', surname: 'Londoño', phone: '302 4247369'),
+    Contacto(name: 'Andres', surname: 'Londoño', phone: '302 4247369'),
   ];
 
   @override
@@ -29,13 +32,26 @@ class _MyHomePage extends State<MyHomePage> {
             margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             child: ListTile(
               onTap: () {
-                // Manejar el evento de toque
+                Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => EditContact(contactos[index])))
+                    .then((newContact) {
+                  if (newContact != null) {
+                    setState(() {
+                      contactos.removeAt(index);
+                      contactos.insert(index, newContact);
+                      messageResponse(
+                          context, newContact.name + " a sido actualizado");
+                    });
+                  }
+                });
               },
               onLongPress: () {
-                // Manejar el evento de presión larga
+                removeContact(context, contactos[index]);
               },
               title: Text(
-                '${contactos[index].name} ${contactos[index].lastname}',
+                '${contactos[index].name} ${contactos[index].surname}',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
@@ -73,18 +89,61 @@ class _MyHomePage extends State<MyHomePage> {
                 icon: Icon(Icons.settings_rounded), label: 'Configuración'),
           ]),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        tooltip: "Agregar Contacto",
-        backgroundColor: const Color.fromARGB(255, 185, 225, 246),
-        child: const Icon(Icons.add)     ),
+          onPressed: () {
+            Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const RegisterContact()))
+                .then((newContact) {
+              if (newContact != null) {
+                setState(() {
+                  contactos.add(newContact);
+                  messageResponse(
+                      context, newContact.name + " a sido guardado");
+                });
+              }
+            });
+          },
+          tooltip: "Agregar Contacto",
+          backgroundColor: const Color.fromARGB(255, 185, 225, 246),
+          child: const Icon(Icons.add)),
+    );
+  }
+
+  removeContact(BuildContext context, Contacto contacto) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Eliminar Contacto"),
+        content:
+            Text("¿Está seguro de que desea eliminar a " + contacto.name + "?"),
+        actions: [
+          TextButton(
+            onPressed: () {
+              setState(() {
+                contactos.remove(contacto);
+              });
+              Navigator.pop(context);
+            },
+            child: const Text(
+              "Eliminar",
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text("Cancelar", style: TextStyle(color: Colors.blue)),
+          ),
+        ],
+      ),
     );
   }
 }
 
 class Contacto {
   var name;
-  var lastname;
+  var surname;
   var phone;
 
-  Contacto({this.name, this.lastname, this.phone});
+  Contacto({this.name, this.surname, this.phone});
 }
